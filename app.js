@@ -43,6 +43,12 @@ async function storefront() {
   }
   const campaign = validTheme(data.active) ? data.active : "natal";
   view.innerHTML = landing({campaign,catalog:data,preview:preview || localPreview});
+  if (data.testing) {
+    const notice = document.createElement("p");
+    notice.className = "notice shell";
+    notice.textContent = "Compra de teste. Use a conta compradora e o saldo de teste do Mercado Pago.";
+    view.prepend(notice);
+  }
   const dialog = document.querySelector("#purchase");
   view.addEventListener("click",event => {
     const button = event.target.closest("[data-product]");

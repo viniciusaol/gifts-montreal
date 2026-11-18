@@ -2,6 +2,21 @@ import config from "./config.js";
 
 const storageKey = "montreal-gifts-admin";
 const giftStorageKey = "montreal-gifts-recipient";
+const testStorageKey = "montreal-gifts-checkout-test";
+const testFragment = new URLSearchParams(location.hash.slice(1)).get("teste");
+if (testFragment && /^[A-Za-z0-9_-]{1,1024}\.[a-f0-9]{64}$/.test(testFragment)) {
+  sessionStorage.setItem(testStorageKey,testFragment);
+  history.replaceState(null,"",location.pathname+location.search);
+}
+
+function checkoutTest() {
+  try {
+    const token = sessionStorage.getItem(testStorageKey);
+    if (!token) return null;
+    const access = JSON.parse(atob(token.split(".")[0].replaceAll("-","+").replaceAll("_","/")));
+    return access.until>Date.now()/1000 ? {token,id:access.id} : null;
+  } catch { return null; }
+}
 
 function session(key = storageKey) {
   try { return JSON.parse(sessionStorage.getItem(key)); } catch { return null; }
@@ -50,11 +65,14 @@ export async function api(path,{body,authorized = false,gift = false,raw = false
   if (!config.apiBase) throw new Error("O serviço ainda não foi configurado.");
   const key = gift ? giftStorageKey : storageKey;
   const token = authorized || gift ? await authToken(key) : "";
+  const test = ["/catalog","/checkout"].includes(path) ? checkoutTest() : null;
+  if (test && body && path==="/checkout") body={...body,request_id:test.id};
   const response = await fetch(apiUrl(path),{
     method:body === undefined ? "GET" : "POST",
     cache:"no-store",
     referrerPolicy:"no-referrer",
-    headers:{...(token ? {authorization:"Bearer "+token} : {}),...(body === undefined ? {} : {"content-type":"application/json"})},
+    headers:{...(token ? {authorization:"Bearer "+token} : {}),...(test ? {"x-gift-test":test.token} : {}),
+      ...(body === undefined ? {} : {"content-type":"application/json"})},
     body:body === undefined ? undefined : JSON.stringify(body)
   });
   if (!response.ok) {
