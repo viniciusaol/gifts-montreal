@@ -1,0 +1,17 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(?:admin/?|pedido/?|preview/?|card/[a-f0-9]{64}/?)$ index.html [END]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  <FilesMatch "^(index\.html|config\.js)$">
+    Header always set Cache-Control "no-cache"
+  </FilesMatch>
+  SetEnvIf Request_URI "^/(?:admin|pedido|preview|card)(?:/|$)" GIFT_PRIVATE
+  Header always set X-Robots-Tag "noindex, nofollow" env=GIFT_PRIVATE
+</IfModule>
