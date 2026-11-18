@@ -56,7 +56,7 @@ export function purchase(product, preview) {
             <div><dt>WhatsApp de entrega</dt><dd data-review-phone></dd></div>
             <div><dt>Data do envio</dt><dd data-review-date></dd></div>
           </dl>
-          <p class="field-help">Quem receber o presente entra no Montreal Gifts ou cria uma conta para acessar o código de resgate.</p>
+          <p class="field-help">Quem receber o presente acessa o link enviado no WhatsApp e entra ou cria uma conta no Matchpoint para resgatar.</p>
           <p class="field-help" data-review-rules hidden></p>
           <p class="field-help" data-review-validity hidden></p>
           ${preview ? '<p class="notice">Esta prévia simula o pagamento e a entrega.</p>' :
