@@ -58,6 +58,7 @@ export function purchase(product, preview) {
           </dl>
           <p class="field-help">O presenteado receberá o cartão no WhatsApp, no seu nome, com o código e as instruções de uso.</p>
           <p class="field-help">Para resgatar, quem receber o presente deve entrar ou criar uma conta no Matchpoint. O voucher ficará na conta de quem resgatar e terá validade de uso de 6 meses.</p>
+          <div data-verification hidden></div>
           ${preview ? '<p class="notice">Esta prévia simula o pagamento e a entrega.</p>' :
             '<p class="field-help">Você paga com Pix ou cartão pelo Mercado Pago.</p>'}
         </section>

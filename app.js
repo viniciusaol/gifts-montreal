@@ -3,6 +3,12 @@ import { api, emailGiftAccess, confirmGiftAccess } from "./api.js";
 import { findProduct, landing } from "./landing.js";
 import { purchase } from "./purchase.js";
 import { date, esc, giftArt, icon } from "./ui.js";
+import { createVerification } from "./verification.js";
+
+if(window.top!==window.self) {
+  document.querySelector("#site").textContent="Abra o Montreal Gifts diretamente em uma nova aba.";
+  throw new Error("embedded_page_blocked");
+}
 
 const view = document.querySelector("#site");
 const path = location.pathname;
@@ -49,20 +55,26 @@ async function storefront() {
     notice.textContent = "Compra de teste. Use a conta compradora e o saldo de teste do Mercado Pago.";
     view.prepend(notice);
   }
+  if(data.private_sale) {
+    const notice=document.createElement("p");notice.className="notice shell";
+    notice.textContent="Compra real restrita. O pagamento será cobrado pela conta da Montreal.";view.prepend(notice);
+  }
   const dialog = document.querySelector("#purchase");
   view.addEventListener("click",event => {
     const button = event.target.closest("[data-product]");
     if (!button || button.disabled) return;
     const product = findProduct(button.dataset.product,data,preview || localPreview);
-    if (product?.options.length) openPurchase(dialog,product,campaign,preview || localPreview);
+    if (product?.options.length) openPurchase(dialog,product,campaign,preview || localPreview,data.captcha_site_key);
   });
 }
 
-function openPurchase(dialog, product, campaign, preview) {
+function openPurchase(dialog, product, campaign, preview,siteKey) {
   dialog.innerHTML = purchase(product,preview);
   dialog.setAttribute("aria-labelledby","purchase-title-"+product.id);
   const form = dialog.querySelector("form");
   const result = form.querySelector(".form-status");
+  const verification=createVerification(form,siteKey);
+  dialog.addEventListener("close",()=>verification.destroy(),{once:true});
 
   form.addEventListener("gifts:checkout",async event => {
     form.setAttribute("aria-busy","true");
@@ -70,6 +82,7 @@ function openPurchase(dialog, product, campaign, preview) {
     for (const button of buttons) button.disabled = true;
     result.textContent = "Preparando o pagamento…";
     try {
+      const captchaToken=verification.token();
       const values = {...event.detail,product_id:product.id,campaign,theme:"regular"};
       const key = new TextEncoder().encode(JSON.stringify(values));
       const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",key)), byte => byte.toString(16).padStart(2,"0")).join("");
@@ -77,9 +90,10 @@ function openPurchase(dialog, product, campaign, preview) {
       form.dataset.checkoutKey = storageKey;
       const id = sessionStorage.getItem(storageKey) || crypto.randomUUID();
       sessionStorage.setItem(storageKey,id);
-      const order = await api("/checkout",{body:{...values,request_id:id}});
+      const order = await api("/checkout",{body:{...values,request_id:id,...(captchaToken?{captcha_token:captchaToken}:{})}});
       location.assign(order.checkout_url || "/pedido/?s="+encodeURIComponent(order.order_status_token));
     } catch (error) {
+      verification.reset();
       if (error.code === "checkout_expired") sessionStorage.removeItem(form.dataset.checkoutKey);
       result.textContent = error.message;
       for (const button of buttons) button.disabled = false;

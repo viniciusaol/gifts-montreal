@@ -278,7 +278,11 @@ export function mountAdmin(view,header,query) {
   async function settingsPage() {
     const {settings,products,options,stock,sales_enabled} = await secured("/admin/settings");
     const themes = [["natal","Natal + Tênis"],["regular","Montreal Gifts Regular"]];
-    const doc = screen(`<section class="admin-panel"><h2>Campanhas e operação</h2>
+    const doc = screen(`<section class="admin-panel"><h2>Mercado Pago</h2>
+      <p>As credenciais são configuradas nos segredos do Supabase. Confira aqui a conta vinculada antes de receber pagamentos reais.</p>
+      <button class="button outline" type="button" data-payment-check>Conferir integração</button>
+      <div data-payment-result role="status"></div>
+    </section><section class="admin-panel"><h2>Campanhas e operação</h2>
       ${sales_enabled ? "" : '<p class="notice">Vendas indisponíveis até a ativação no ambiente de produção.</p>'}
       <div class="admin-actions">${themes.map(([theme,name])=>'<a class="button outline" href="/preview/?theme='+theme+'">Prévia '+name+'</a>').join("")}</div>
       <form class="admin-form" id="settings">
@@ -325,11 +329,25 @@ export function mountAdmin(view,header,query) {
           ${label("ID do produto no TPC","tpc_product",option.tpc_product,"text","maxlength=120")}
           ${label("Tipo de voucher no TPC","tpc_voucher",option.tpc_voucher,"text","maxlength=120")}
           ${label("Validade prevista em dias (opcional)","validity_days",option.validity_days,"number","min=1 max=36500")}
-          ${textarea("Condições e instruções de resgate","rules",option.rules)}
+          ${textarea("Condições e instruções de resgate","rules",option.rules,500)}
           <label class="check-label"><input name="active" type="checkbox" ${option.active?"checked":""}>Duração disponível para venda</label>
           <button class="button primary">Salvar duração</button>${statusLine}
         </form>
       </details>`).join("")}</section>`).join("")}`);
+    doc.querySelector("[data-payment-check]").onclick=async event=>{
+      const button=event.currentTarget,result=doc.querySelector("[data-payment-result]");button.disabled=true;
+      try {
+        const data=await secured("/admin/payments/configuration");
+        const modeName=mode=>({test:"Teste",live:"Produção"}[mode] || "Não configurado");
+        const rows=[["Ambiente do Gifts",modeName(data.mode)],["Vendas ao público",data.sales_enabled?"Ativas":"Fechadas"],
+          ["Access Token",data.access_token_configured?"Configurado":"Pendente"],["Assinatura do webhook",data.webhook_configured?"Configurada":"Pendente"],
+          ["ID da conta vendedora",data.account?.id || "Não verificado"],["Tipo da conta vendedora",modeName(data.account?.mode)],
+          ["ID configurado corresponde à conta",data.account?data.account.matches_collector?"Sim":"Não — atualizar GIFT_MP_COLLECTOR_ID":"Não verificado"]];
+        result.innerHTML=rowTable(["Configuração","Situação"],rows.map(row=>row.map(esc)))+
+          (data.account_error?'<p class="notice">Não foi possível validar a conta. Confira o Access Token nos segredos e tente novamente.</p>':"");
+      } catch(error) {result.textContent=error.message;}
+      finally {button.disabled=false;}
+    };
     connectForm(doc.querySelector("#settings"),"/admin/settings",data=>({
       campaign:data.campaign, operations_phone:data.operations_phone, redemption_url:data.redemption_url, tpc_automation:data.tpc_automation==="on",
       copies:Object.fromEntries(themes.map(([theme])=>[theme,{title:data[theme+"_title"],subtitle:data[theme+"_subtitle"],cta:data[theme+"_cta"]}])),

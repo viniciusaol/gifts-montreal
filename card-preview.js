@@ -44,6 +44,7 @@
     form.querySelector("[data-previous]").hidden = step===0 || step===3;
     set(form,".form-status","");
     sync(form);
+    form.dispatchEvent(new CustomEvent("gifts:step",{detail:step}));
     form.querySelector(".purchase-columns").scrollTop = 0;
     form.querySelector("[data-step-title]").focus();
   }
