@@ -50,6 +50,25 @@ async function grant(type, values, key = storageKey) {
 }
 
 export const signIn = (email,password) => grant("password",{email,password});
+export const requestPasswordReset = email => authRequest("recover?redirect_to="+encodeURIComponent(location.origin+"/admin/reset/"),{email},"Não foi possível solicitar a recuperação. Tente novamente em instantes.");
+
+export async function recoveryAccount() {
+  const params=new URLSearchParams(location.hash.slice(1));
+  const access=params.get("access_token"),refresh=params.get("refresh_token");
+  history.replaceState(null,"",location.pathname);
+  if(params.get("type")!=="recovery" || !access || !refresh) throw new Error("Abra o link de recuperação recebido no seu e-mail.");
+  store(storageKey,{access_token:access,refresh_token:refresh,expires_in:Number(params.get("expires_in")) || 3600});
+  const response=await fetch(config.supabaseUrl+"/auth/v1/user",{headers:{apikey:config.supabasePublicKey,authorization:"Bearer "+access}});
+  if(!response.ok) {signOut();throw new Error("O link de recuperação expirou. Solicite um novo link.");}
+  return response.json();
+}
+
+export async function setRecoveredPassword(password) {
+  const token=await authToken(storageKey);
+  if(!token)throw new Error("Solicite um novo link de recuperação.");
+  const response=await fetch(config.supabaseUrl+"/auth/v1/user",{method:"PUT",headers:{apikey:config.supabasePublicKey,authorization:"Bearer "+token,"content-type":"application/json"},body:JSON.stringify({password})});
+  if(!response.ok)throw new Error("Não foi possível atualizar a senha. Use uma senha forte e tente novamente.");
+}
 export const emailGiftAccess = email => authRequest("otp",{email,create_user:true},"Não foi possível enviar o código. Confira o e-mail e tente novamente.");
 export const confirmGiftAccess = async (email,token) => store(giftStorageKey,await authRequest("verify",{email,token,type:"email"},"Código inválido ou expirado."));
 const refreshing = new Map();

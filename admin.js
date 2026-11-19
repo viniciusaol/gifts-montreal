@@ -1,4 +1,4 @@
-import { api, hasSession, signIn, signOut } from "./api.js";
+import { api, hasSession, signIn, signOut, requestPasswordReset, recoveryAccount, setRecoveredPassword } from "./api.js";
 import { date, esc, icon, money } from "./ui.js";
 
 const stages = {
@@ -71,9 +71,10 @@ export function mountAdmin(view,header,query) {
     const page = wrap(`<h1>Painel Montreal Gifts</h1><form class="admin-form admin-login">
       <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
       <label>Senha<input type="password" name="password" autocomplete="current-password" required></label>
-      <button class="button primary">Entrar</button>${statusLine}</form>`);
+      <button class="button primary">Entrar</button><button type="button" class="text-link" data-forgot>Esqueci minha senha</button>${statusLine}</form>`);
     const status = page.querySelector(".form-status");
     status.textContent = message;
+    page.querySelector("[data-forgot]").onclick = recoveryRequest;
     page.querySelector("form").onsubmit = async event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -89,6 +90,37 @@ export function mountAdmin(view,header,query) {
         button.disabled = false;
       }
     };
+  }
+
+  function recoveryRequest() {
+    const page=wrap(`<h1>Recuperar acesso</h1><p>Informe seu e-mail de administrador para receber um link e criar uma nova senha.</p>
+      <form class="admin-form admin-login"><label>E-mail<input name="email" type="email" autocomplete="username" required></label>
+      <button class="button primary">Enviar link de recuperação</button>${statusLine}</form><a class="text-link" href="/admin/">Voltar ao login</a>`);
+    const form=page.querySelector("form"),status=page.querySelector(".form-status");
+    form.onsubmit=async event=>{
+      event.preventDefault();const button=form.querySelector("button");button.disabled=true;
+      try {await requestPasswordReset(form.elements.email.value.trim());status.textContent="Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha. Confira também a pasta de spam.";}
+      catch(error) {status.textContent=error.message;button.disabled=false;}
+    };
+  }
+
+  async function recoveryPassword() {
+    try {
+      const account=await recoveryAccount();
+      const page=wrap(`<h1>Crie uma nova senha</h1><p>Conta: ${esc(account.email)}</p><form class="admin-form admin-login">
+        <label>Nova senha<input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+        <label>Confirme a nova senha<input name="confirm" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+        <p class="field-help">Use pelo menos 12 caracteres e uma senha que você não utiliza em outros serviços.</p>
+        <button class="button primary">Salvar nova senha</button>${statusLine}</form>`);
+      const form=page.querySelector("form"),status=page.querySelector(".form-status");
+      form.onsubmit=async event=>{
+        event.preventDefault();
+        if(form.elements.password.value!==form.elements.confirm.value) {status.textContent="As senhas precisam ser iguais.";return;}
+        const button=form.querySelector("button");button.disabled=true;
+        try {await setRecoveredPassword(form.elements.password.value);form.reset();location.assign("/admin/");}
+        catch(error) {status.textContent=error.message;button.disabled=false;}
+      };
+    } catch(error) {login(error.message);}
   }
 
   function screen(html) {
@@ -344,5 +376,6 @@ export function mountAdmin(view,header,query) {
     } catch(error) { await fails(error); }
   }
 
-  show();
+  if(/^\/admin\/reset\/?$/.test(location.pathname)) recoveryPassword();
+  else show();
 }
