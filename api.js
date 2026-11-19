@@ -80,7 +80,7 @@ async function authToken(key) {
   try { return await refreshing.get(key); } catch { sessionStorage.removeItem(key); return ""; }
 }
 
-export async function api(path,{body,authorized = false,gift = false,raw = false} = {}) {
+export async function api(path,{body,authorized = false,gift = false,raw = false,timeoutMs=45000} = {}) {
   if (!config.apiBase) throw new Error("O serviço ainda não foi configurado.");
   const key = gift ? giftStorageKey : storageKey;
   const token = authorized || gift ? await authToken(key) : "";
@@ -89,6 +89,7 @@ export async function api(path,{body,authorized = false,gift = false,raw = false
   const response = await fetch(apiUrl(path),{
     method:body === undefined ? "GET" : "POST",
     cache:"no-store",
+    signal:AbortSignal.timeout(timeoutMs),
     referrerPolicy:"no-referrer",
     headers:{...(token ? {authorization:"Bearer "+token} : {}),...(test ? {"x-gift-test":test.token} : {}),
       ...(body === undefined ? {} : {"content-type":"application/json"})},

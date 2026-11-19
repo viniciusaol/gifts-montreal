@@ -341,6 +341,7 @@ export function mountAdmin(view,header,query) {
         const modeName=mode=>({test:"Teste",live:"Produção"}[mode] || "Não configurado");
         const rows=[["Ambiente do Gifts",modeName(data.mode)],["Vendas ao público",data.sales_enabled?"Ativas":"Fechadas"],
           ["Access Token",data.access_token_configured?"Configurado":"Pendente"],["Assinatura do webhook",data.webhook_configured?"Configurada":"Pendente"],
+          ["Proteção contra robôs no checkout",data.public_protection_configured?"Configurada":"Pendente"],
           ["ID da conta vendedora",data.account?.id || "Não verificado"],["Tipo da conta vendedora",modeName(data.account?.mode)],
           ["ID configurado corresponde à conta",data.account?data.account.matches_collector?"Sim":"Não — atualizar GIFT_MP_COLLECTOR_ID":"Não verificado"]];
         result.innerHTML=rowTable(["Configuração","Situação"],rows.map(row=>row.map(esc)))+

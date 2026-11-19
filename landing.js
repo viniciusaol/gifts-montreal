@@ -28,7 +28,7 @@ export function findProduct(id,catalog,preview) {
   if (!base) return null;
   const remote = catalog.products.find(product => product.id===id);
   const offers = remote?.options?.length ? remote.options : (preview ? base.options : []);
-  return {...base,...remote,defaultImage:base.image,options:preview ? offers : offers.filter(option => option.available)};
+  return {...base,...remote,defaultImage:base.image,pending:Boolean(catalog.loading),options:preview ? offers : offers.filter(option => option.available)};
 }
 
 const campaigns = {
@@ -63,7 +63,7 @@ function productTile(product, review) {
     <img src="${esc(picture)}" alt="${esc(alt)}" loading="lazy" width="960" height="640">
     <div class="product-info"><h3>${esc(product.name)}</h3><p>${esc(product.description)}${product.id === "aula" ? " O agendamento depende da disponibilidade do professor." : ""}</p>
       <div class="product-action">
-        <span>${from === null ? "Venda indisponível" : "A partir de " + money(from)}</span>
+        <span>${product.pending ? "Consultando opções…" : from === null ? "Venda indisponível" : "A partir de " + money(from)}</span>
         <button class="button outline" type="button" data-product="${product.id}"${openDialog} ${product.options.length ? "" : "disabled"}>Escolher duração ${icon("diagonal")}</button>
       </div>
     </div>
@@ -78,7 +78,7 @@ export function landing({ campaign, catalog, preview, review = false }) {
   const offers = products.map(product => findProduct(product.id,catalog,preview));
   const otherCampaign = natal ? '<a href="regular.html">Ver versão Regular</a>' : '<a href="natal.html">Ver versão Natal</a>';
   const previewLink = review ? otherCampaign : '<a href="/admin/">Voltar ao painel</a>';
-  return `<div class="landing ${campaign}">
+  return `<div class="landing ${campaign}" data-campaign="${campaign}">
     ${preview ? `<div class="preview-bar"><div class="shell"><span>Prévia da campanha ${natal ? "Natal" : "Regular"}</span>${previewLink}</div></div>` : ""}
     <header class="topbar shell">
       <a href="${review ? "#conteudo" : "/"}" class="brand" aria-label="Montreal Gifts"><img src="/assets/logo-ink.svg" alt="Montreal Tênis" width="150" height="27"><span>Gifts</span></a>

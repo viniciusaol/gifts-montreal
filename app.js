@@ -38,14 +38,19 @@ async function storefront() {
   const requested = query.get("theme");
   const preview = path === "/preview" || path.startsWith("/preview/");
   const localPreview = config.localPreview && validTheme(requested);
+  const initial=view.querySelector(".landing[data-campaign]");
+  const initialCampaign=validTheme(initial?.dataset.campaign)?initial.dataset.campaign:"regular";
   let data;
   if (preview && !validTheme(requested)) return showError("Prévia indisponível","Escolha uma campanha no painel.");
+  if(!preview && !localPreview && !initial) {
+    view.innerHTML=landing({campaign:initialCampaign,catalog:{products:[],loading:true},preview:false});
+  }
   try {
     data = localPreview ? {active:requested,products:[]} :
-      await api(preview ? "/admin/preview?theme=" + requested : "/catalog",{authorized:preview});
+      await api(preview ? "/admin/preview?theme=" + requested : "/catalog",{authorized:preview,timeoutMs:12000});
   } catch (error) {
     if (preview) return showError("Prévia indisponível",error.message);
-    data = {active:"natal",products:[],error:true};
+    data = {active:initialCampaign,products:[],error:true};
   }
   const campaign = validTheme(data.active) ? data.active : "natal";
   view.innerHTML = landing({campaign,catalog:data,preview:preview || localPreview});
