@@ -1,5 +1,6 @@
 import { api, hasSession, signIn, signOut, requestPasswordReset, recoveryAccount, setRecoveredPassword } from "./api.js";
 import { date, esc, icon, money } from "./ui.js";
+import { createVerification } from "./verification.js";
 
 const stages = {
   awaiting_payment:"Aguardando pagamento",awaiting_issue:"Aguardando baixa no TPC",processing:"Em processamento",
@@ -57,7 +58,9 @@ function stockRows(value) {
 export function mountAdmin(view,header,query) {
   let filter = new URLSearchParams();
   let current = "orders";
+  let verificationCleanup;
   const wrap = html => {
+    verificationCleanup?.();verificationCleanup=undefined;
     view.innerHTML = header() + `<main id="conteudo" class="admin shell" tabindex="-1">${html}</main>`;
     return view.querySelector("main");
   };
@@ -282,6 +285,9 @@ export function mountAdmin(view,header,query) {
       <p>As credenciais são configuradas nos segredos do Supabase. Confira aqui a conta vinculada antes de receber pagamentos reais.</p>
       <button class="button outline" type="button" data-payment-check>Conferir integração</button>
       <div data-payment-result role="status"></div>
+      <h3>Proteção do checkout</h3><p>Valide a proteção contra robôs sem criar pedido nem fazer pagamento.</p>
+      <button class="button outline" type="button" data-protection-test>Testar proteção</button>
+      <div data-protection-result></div>
     </section><section class="admin-panel"><h2>Campanhas e operação</h2>
       ${sales_enabled ? "" : '<p class="notice">Vendas indisponíveis até a ativação no ambiente de produção.</p>'}
       <div class="admin-actions">${themes.map(([theme,name])=>'<a class="button outline" href="/preview/?theme='+theme+'">Prévia '+name+'</a>').join("")}</div>
@@ -342,11 +348,33 @@ export function mountAdmin(view,header,query) {
         const rows=[["Ambiente do Gifts",modeName(data.mode)],["Vendas ao público",data.sales_enabled?"Ativas":"Fechadas"],
           ["Access Token",data.access_token_configured?"Configurado":"Pendente"],["Assinatura do webhook",data.webhook_configured?"Configurada":"Pendente"],
           ["Proteção contra robôs no checkout",data.public_protection_configured?"Configurada":"Pendente"],
+          ["Teste da proteção",data.public_protection_verified?"Validado":"Pendente"],
           ["ID da conta vendedora",data.account?.id || "Não verificado"],["Tipo da conta vendedora",modeName(data.account?.mode)],
           ["ID configurado corresponde à conta",data.account?data.account.matches_collector?"Sim":"Não — atualizar GIFT_MP_COLLECTOR_ID":"Não verificado"]];
         result.innerHTML=rowTable(["Configuração","Situação"],rows.map(row=>row.map(esc)))+
           (data.account_error?'<p class="notice">Não foi possível validar a conta. Confira o Access Token nos segredos e tente novamente.</p>':"");
       } catch(error) {result.textContent=error.message;}
+      finally {button.disabled=false;}
+    };
+    doc.querySelector("[data-protection-test]").onclick=async event=>{
+      const button=event.currentTarget,host=doc.querySelector("[data-protection-result]");button.disabled=true;
+      try {
+        const data=await secured("/admin/payments/configuration");
+        if(!data.captcha_site_key)throw new Error("Configure as chaves do Turnstile nos segredos do Supabase.");
+        verificationCleanup?.();
+        host.innerHTML='<form class="admin-form"><div data-verification hidden></div><button class="button primary">Validar proteção</button>'+statusLine+'</form>';
+        const form=host.querySelector("form"),status=form.querySelector(".form-status");
+        const verification=createVerification(form,data.captcha_site_key);verificationCleanup=()=>verification.destroy();
+        form.dispatchEvent(new CustomEvent("gifts:step",{detail:2}));
+        form.onsubmit=async event=>{
+          event.preventDefault();const submit=form.querySelector("button");submit.disabled=true;
+          try {
+            await secured("/admin/payments/verify-protection",{body:{captcha_token:verification.token()}});
+            status.textContent="Proteção validada. Nenhum pedido ou pagamento foi criado.";
+          } catch(error) {status.textContent=error.message;}
+          finally {verification.reset();submit.disabled=false;}
+        };
+      } catch(error) {host.textContent=error.message;}
       finally {button.disabled=false;}
     };
     connectForm(doc.querySelector("#settings"),"/admin/settings",data=>({
