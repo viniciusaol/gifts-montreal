@@ -106,21 +106,21 @@ export function landing({ campaign, catalog, preview, review = false }) {
           <ol class="steps">
             <li><span>${icon("ball")}</span><h3>Escolha a experiência</h3><p>Escolha a duração da locação ou da aula particular.</p></li>
             <li><span>${icon("pen")}</span><h3>Personalize o cartão</h3><p>Escreva uma mensagem e indique para qual WhatsApp vai o presente.</p></li>
-            <li><span>${icon("gift")}</span><h3>Pague e presenteie</h3><p>Após a confirmação e a emissão, o cartão chega para você encaminhar ou vai direto ao presenteado.</p></li>
+            <li><span>${icon("gift")}</span><h3>Pague e presenteie</h3><p>Após a confirmação e a liberação, o presenteado recebe o cartão e as instruções pelo WhatsApp na data escolhida.</p></li>
           </ol>
         </div>
       </section>
       <section class="preview-section shell">
         <div class="preview-display">${giftArt({recipient:"quem você quiser",product:"Locação de quadra"})}</div>
-        <div><h2>${copy.previewTitle}</h2><p>Acrescente o nome e uma mensagem. Depois da compra, é só enviar a quem você quer presentear.</p><a class="text-link" href="#experiencias">Escolher experiência ${icon("arrow")}</a></div>
+        <div><h2>${copy.previewTitle}</h2><p>Acrescente uma mensagem, indique quem vai receber e escolha a data do envio. O cartão chega ao WhatsApp do presenteado no seu nome.</p><a class="text-link" href="#experiencias">Escolher experiência ${icon("arrow")}</a></div>
       </section>
       <section class="usage shell" aria-labelledby="utilizacao">
         <h2 id="utilizacao">Como usar o presente</h2>
         <div>
-          <details><summary>Onde fica o código? ${icon("plus")}</summary><p>O código aparece na imagem e na mensagem do WhatsApp. O link de resgate abre o Matchpoint com o código preenchido. Entre ou cadastre-se para resgatar.</p></details>
-          <details><summary>Como usar a locação de quadra? ${icon("plus")}</summary><p>Após resgatar o código no Matchpoint, o valor fica disponível na sua conta como voucher. Escolha o horário e a quadra e, na etapa de pagamento da reserva, selecione pagar com voucher. Reservas sujeitas à disponibilidade.</p></details>
-          <details><summary>Como agendar a aula particular? ${icon("plus")}</summary><p>Após resgatar o código no Matchpoint, a aula fica disponível na sua conta como voucher. Entre em contato com a <a href="https://wa.me/5541936183407">secretaria pelo +55 41 93618-3407</a> para agendar com um professor, conforme a disponibilidade.</p></details>
-          <details><summary>Qual é a validade? ${icon("plus")}</summary><p>A validade para uso do voucher é de 6 meses. Após resgatar o código, confira a data de vencimento na sua conta do Matchpoint.</p></details>
+          <details><summary>Como o presenteado recebe o código? ${icon("plus")}</summary><p>O presenteado recebe o código na imagem do cartão e na mensagem do WhatsApp, junto com o link de resgate e as instruções. Quem receber o presente deverá entrar ou criar uma conta no Matchpoint para resgatar.</p></details>
+          <details><summary>Como o presenteado usa a locação de quadra? ${icon("plus")}</summary><p>Após o resgate, o valor fica disponível como voucher na conta de quem resgatar o presente. O presenteado escolhe o horário e a quadra e seleciona pagar com voucher na etapa de pagamento da reserva. Reservas sujeitas à disponibilidade.</p></details>
+          <details><summary>Como o presenteado agenda a aula particular? ${icon("plus")}</summary><p>Após o resgate, a aula fica disponível como voucher na conta de quem resgatar o presente. O presenteado deverá entrar em contato com a <a href="https://wa.me/5541936183407">secretaria pelo +55 41 93618-3407</a> para agendar com um professor, conforme a disponibilidade.</p></details>
+          <details><summary>Qual é a validade? ${icon("plus")}</summary><p>A validade para uso do voucher é de 6 meses. Após o resgate, o presenteado poderá conferir a data de vencimento na conta do Matchpoint.</p></details>
         </div>
       </section>
     </main>

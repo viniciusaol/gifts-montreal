@@ -15,7 +15,7 @@
 
   function sync(form) {
     const selected = form.querySelector("[name=option_id]:checked");
-    const {title,price,rules,validity} = selected.dataset;
+    const {title,price} = selected.dataset;
     form.elements.delivery_on.min = brazilDay.format(new Date());
     const recipient = value(form,"recipient");
     const buyer = value(form,"buyer_name");
@@ -29,8 +29,6 @@
     set(form,"[data-review-destination]",recipient);
     set(form,"[data-review-phone]",value(form,"recipient_phone"));
     set(form,"[data-review-date]",dateLabel(value(form,"delivery_on")));
-    cardText(form,"[data-review-rules]",rules);
-    cardText(form,"[data-review-validity]",validity ? "Validade mínima de "+validity+" dias a partir da data escolhida." : "");
   }
 
   function show(form,step) {

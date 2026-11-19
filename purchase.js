@@ -6,7 +6,7 @@ const duration = hours => hours === 1 ? "1 hora" : hours + " horas";
 function optionChoice(option,index) {
   return `<label class="checkout-choice duration-choice">
     <input type="radio" name="option_id" value="${esc(option.id)}" ${index===0 ? "checked" : ""} required
-      data-title="${esc(option.title)}" data-price="${option.price_cents}" data-rules="${esc(option.rules)}" data-validity="${esc(option.validity_days)}">
+      data-title="${esc(option.title)}" data-price="${option.price_cents}">
     <span><strong>${duration(option.hours)}</strong></span><span class="choice-price">${money(option.price_cents)}</span>
   </label>`;
 }
@@ -28,7 +28,7 @@ export function purchase(product, preview) {
             <legend>Duração do presente</legend>
             ${product.options.map(optionChoice).join("")}
           </fieldset>
-          ${product.id === "aula" ? '<p class="field-help">Após o resgate, a aula fica disponível como voucher. Agende com a secretaria pelo <a href="https://wa.me/5541936183407">+55 41 93618-3407</a>, conforme a disponibilidade do professor.</p>' : '<p class="field-help">Após o resgate, o valor fica disponível como voucher. Ao reservar o horário e a quadra no Matchpoint, escolha pagar com voucher.</p>'}
+          ${product.id === "aula" ? '<p class="field-help">O presenteado resgata o código no Matchpoint e agenda a aula com a secretaria, conforme a disponibilidade do professor.</p>' : '<p class="field-help">O presenteado resgata o código no Matchpoint e usa o voucher para pagar a reserva do horário e da quadra.</p>'}
         </section>
         <section class="purchase-fields" data-purchase-panel aria-label="Cartão e entrega" hidden>
           <input type="hidden" name="delivery_mode" value="recipient">
@@ -52,14 +52,12 @@ export function purchase(product, preview) {
           <dl class="purchase-review">
             <div><dt>Experiência</dt><dd data-review-title></dd></div>
             <div><dt>Comprador</dt><dd data-review-buyer></dd></div>
-            <div><dt>Entrega do cartão</dt><dd data-review-destination></dd></div>
+            <div><dt>Presenteado</dt><dd data-review-destination></dd></div>
             <div><dt>WhatsApp de entrega</dt><dd data-review-phone></dd></div>
             <div><dt>Data do envio</dt><dd data-review-date></dd></div>
           </dl>
-          <p class="field-help">Quem receber o presente acessa o link enviado no WhatsApp e entra ou cria uma conta no Matchpoint para resgatar.</p>
-          <p class="field-help">Validade para uso do voucher: 6 meses. Após o resgate, confira a data de vencimento no Matchpoint.</p>
-          <p class="field-help" data-review-rules hidden></p>
-          <p class="field-help" data-review-validity hidden></p>
+          <p class="field-help">O presenteado receberá o cartão no WhatsApp, no seu nome, com o código e as instruções de uso.</p>
+          <p class="field-help">Para resgatar, quem receber o presente deve entrar ou criar uma conta no Matchpoint. O voucher ficará na conta de quem resgatar e terá validade de uso de 6 meses.</p>
           ${preview ? '<p class="notice">Esta prévia simula o pagamento e a entrega.</p>' :
             '<p class="field-help">Você paga com Pix ou cartão pelo Mercado Pago.</p>'}
         </section>
