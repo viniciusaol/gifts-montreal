@@ -21,7 +21,7 @@ const events = {
   tpc_mark_started:"Tentativa de baixa registrada",tpc_stock_confirmed:"Baixa confirmada no TPC",
   tpc_sync_review:"Baixa enviada para revisão",tpc_verification_requested:"Nova conferência solicitada"
 };
-const metricNames = {total:"Vendas aprovadas",revenue:"Receita confirmada",awaiting_payment:"Aguardando pagamento",
+const metricNames = {orders:"Pedidos criados",total:"Vendas aprovadas",revenue:"Valor aprovado",awaiting_payment:"Aguardando pagamento",
   awaiting_issue:"Aguardando emissão",processing:"Em processamento",issued:"Emitidos",delivered:"Enviados",
   error:"Com erro",manual:"Intervenção manual"};
 const moneyText = value => value == null ? "—" : money(value);
@@ -61,8 +61,9 @@ export function mountAdmin(view,header,query) {
     view.innerHTML = header() + `<main id="conteudo" class="admin shell" tabindex="-1">${html}</main>`;
     return view.querySelector("main");
   };
-  const toolbar = `<div class="admin-toolbar"><h1>Painel de pedidos</h1><div class="admin-actions">
+  const toolbar = `<div class="admin-toolbar"><h1>Relatório de compras</h1><div class="admin-actions">
     <a class="button outline" href="/admin/">Pedidos</a><a class="button outline" href="/admin/?settings=1">Configurações</a>
+    <button class="button outline" data-refresh>Atualizar</button>
     <button class="button outline" data-logout>Sair</button></div></div>`;
   const secured = (path,options={}) => api(path,{...options,authorized:true});
 
@@ -93,6 +94,7 @@ export function mountAdmin(view,header,query) {
   function screen(html) {
     const page = wrap(toolbar + html);
     page.querySelector("[data-logout]").onclick = () => { signOut(); login(); };
+    page.querySelector("[data-refresh]").onclick = show;
     return page;
   }
 
@@ -105,20 +107,26 @@ export function mountAdmin(view,header,query) {
   }
 
   async function overview() {
-    const {orders,total,metrics,page} = await secured("/admin/orders?"+filter);
+    const {orders,total,metrics,page,mode,alerts=[]} = await secured("/admin/orders?"+filter);
     const options = Object.entries(stages).map(([key,text]) => '<option value="'+key+'"'+(filter.get("stage")===key?" selected":"")+'>'+text+'</option>').join("");
-    const list = orders.length ? rowTable(["Pedido","Comprador","WhatsApp","Experiência","Valor","Pagamento","Emissão","Código TPC","Envio","Compra"],orders.map(order=>[
+    const list = orders.length ? rowTable(["Pedido","Comprador","WhatsApp","Experiência","Valor","Pagamento","Ambiente","Emissão","Código TPC","Envio","Compra"],orders.map(order=>[
       '<a href="'+orderUrl(order.id)+'">'+number(order.number)+'</a>',esc(order.buyer_name || "—"),esc(order.buyer_phone || "—"),esc(order.product_name),money(order.price_cents),
-      esc(payments[order.payment_status]),esc(order.processing ? stages.processing : stages[order.stage]),esc(order.code || "—"),order.sent_at ? "Enviado" : "Pendente",timestamp(order.created_at)
+      esc(payments[order.payment_status]),esc({test:"Teste",live:"Produção",unknown:"Não informado"}[order.payment_mode] || "—"),esc(order.processing ? stages.processing : stages[order.stage]),esc(order.code || "—"),order.sent_at ? "Enviado" : "Pendente",timestamp(order.created_at)
     ])) : "<p>Nenhum pedido neste filtro.</p>";
     const doc = screen(`<form id="filters" class="admin-filters">
       ${label("De","from",filter.get("from"),"date")}
       ${label("Até","until",filter.get("until"),"date")}
+      <label>Ambiente<select name="mode">${[["live","Produção"],["test","Teste"],["unknown","Não informado"],["all","Todos"]].map(([value,name])=>'<option value="'+value+'"'+(mode===value?' selected':'')+'>'+name+'</option>').join("")}</select></label>
       <label>Status<select name="stage"><option value="">Todos</option>${options}</select></label>
       <button class="button primary">Filtrar</button><button type="button" id="export" class="button outline">Exportar CSV</button>
-    </form>${statusLine}
+    </form>${mode==="test" ? '<p class="notice">Pedidos de teste. Estes valores não representam vendas reais.</p>' : mode==="all" ? '<p class="notice">Este relatório inclui testes e produção. Use o filtro de ambiente para separar os valores.</p>' : ""}${statusLine}
     <dl class="metrics">${Object.entries(metricNames).map(([key,name])=>"<div><dt>"+name+"</dt><dd>"+(key==="revenue"?money(metrics[key]):metrics[key])+"</dd></div>").join("")}</dl>
-    ${list}<div class="admin-actions">
+    <h2>Vendas por modalidade</h2>${rowTable(["Modalidade","Pedidos","Vendas aprovadas","Valor aprovado"],(metrics.by_product || []).map(product=>[esc(product.title),esc(product.orders),esc(product.approved),money(product.revenue)]))}
+    <h2>Alertas de estoque</h2><p>Os avisos são enviados ao contato interno quando uma modalidade chega a 5 códigos disponíveis ou menos.</p>
+    ${alerts.length ? rowTable(["Modalidade","Disponíveis no aviso","Situação","Criado em","Enviado em"],alerts.map(alert=>[
+      esc((metrics.by_product || []).find(product=>product.id===alert.option_id)?.title || alert.option_id),esc(alert.available_count),esc(states[alert.state] || alert.state),timestamp(alert.created_at),timestamp(alert.notified_at)
+    ])) : "<p>Nenhum alerta de estoque registrado.</p>"}
+    <h2>Pedidos</h2>${list}<div class="admin-actions">
       <button class="button outline" id="prev" ${page===0?"disabled":""}>Anterior</button>
       <span>${total ? page*40+1 : 0} a ${Math.min((page+1)*40,total)} de ${total}</span>
       <button class="button outline" id="next" ${(page+1)*40>=total?"disabled":""}>Próxima</button>
