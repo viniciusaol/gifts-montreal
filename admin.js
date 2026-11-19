@@ -251,7 +251,7 @@ export function mountAdmin(view,header,query) {
         ${label("WhatsApp operacional","operations_phone",settings.operations_phone,"tel","maxlength=24")}
         ${label("Link de resgate validado no TPC","redemption_url",settings.redemption_url,"url","maxlength=500")}
         <fieldset><legend>Mensagens do WhatsApp</legend>
-          <p>Campos disponíveis. {pedido}, {comprador}, {presenteado}, {produto}, {painel}, {data} e {link}. Campo vazio usa a mensagem padrão.</p>
+          <p>Campos disponíveis. {pedido}, {comprador}, {presenteado}, {produto}, {painel}, {data}, {codigo}, {link} e {instrucoes}. As instruções de uso são incluídas na entrega. Campo vazio usa a mensagem padrão.</p>
           ${[["internal","Aviso interno"],["confirmation","Confirmação para quem vai encaminhar"],["confirmation_recipient","Confirmação da compra com envio direto"],["deliver","Cartão para o comprador"],["deliver_recipient","Cartão para o presenteado"]].map(([key,name])=>textarea(name,key,settings.messages[key],1200)).join("")}
         </fieldset>
         <label class="check-label"><input name="tpc_automation" type="checkbox" ${settings.tpc_automation?"checked":""}>Processar a fila de cartões no Chrome da operação</label>

@@ -28,7 +28,7 @@ export function purchase(product, preview) {
             <legend>Duração do presente</legend>
             ${product.options.map(optionChoice).join("")}
           </fieldset>
-          ${product.id === "aula" ? '<p class="field-help">A aula precisa ser agendada conforme a disponibilidade do professor.</p>' : ""}
+          ${product.id === "aula" ? '<p class="field-help">Após o resgate, a aula fica disponível como voucher. Agende com a secretaria pelo <a href="https://wa.me/5541936183407">+55 41 93618-3407</a>, conforme a disponibilidade do professor.</p>' : '<p class="field-help">Após o resgate, o valor fica disponível como voucher. Ao reservar o horário e a quadra no Matchpoint, escolha pagar com voucher.</p>'}
         </section>
         <section class="purchase-fields" data-purchase-panel aria-label="Cartão e entrega" hidden>
           <input type="hidden" name="delivery_mode" value="recipient">
@@ -57,6 +57,7 @@ export function purchase(product, preview) {
             <div><dt>Data do envio</dt><dd data-review-date></dd></div>
           </dl>
           <p class="field-help">Quem receber o presente acessa o link enviado no WhatsApp e entra ou cria uma conta no Matchpoint para resgatar.</p>
+          <p class="field-help">Validade para uso do voucher: 6 meses. Após o resgate, confira a data de vencimento no Matchpoint.</p>
           <p class="field-help" data-review-rules hidden></p>
           <p class="field-help" data-review-validity hidden></p>
           ${preview ? '<p class="notice">Esta prévia simula o pagamento e a entrega.</p>' :

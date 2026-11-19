@@ -118,8 +118,9 @@ export function landing({ campaign, catalog, preview, review = false }) {
         <h2 id="utilizacao">Como usar o presente</h2>
         <div>
           <details><summary>Onde fica o código? ${icon("plus")}</summary><p>O código aparece na imagem e na mensagem do WhatsApp. O link de resgate abre o Matchpoint com o código preenchido. Entre ou cadastre-se para resgatar.</p></details>
-          <details><summary>Como agendar? ${icon("plus")}</summary><p>Siga as instruções de resgate do cartão. O agendamento depende da disponibilidade da quadra ou do professor.</p></details>
-          <details><summary>Qual é a validade? ${icon("plus")}</summary><p>A data de validade fica indicada no cartão emitido. Consulte as condições da experiência antes de pagar.</p></details>
+          <details><summary>Como usar a locação de quadra? ${icon("plus")}</summary><p>Após resgatar o código no Matchpoint, o valor fica disponível na sua conta como voucher. Escolha o horário e a quadra e, na etapa de pagamento da reserva, selecione pagar com voucher. Reservas sujeitas à disponibilidade.</p></details>
+          <details><summary>Como agendar a aula particular? ${icon("plus")}</summary><p>Após resgatar o código no Matchpoint, a aula fica disponível na sua conta como voucher. Entre em contato com a <a href="https://wa.me/5541936183407">secretaria pelo +55 41 93618-3407</a> para agendar com um professor, conforme a disponibilidade.</p></details>
+          <details><summary>Qual é a validade? ${icon("plus")}</summary><p>A validade para uso do voucher é de 6 meses. Após resgatar o código, confira a data de vencimento na sua conta do Matchpoint.</p></details>
         </div>
       </section>
     </main>
