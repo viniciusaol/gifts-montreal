@@ -37,7 +37,7 @@ export function purchase(product, preview) {
             <label>Nome <input name="recipient" required maxlength="45"></label>
             <label>WhatsApp <input name="recipient_phone" type="tel" inputmode="tel" placeholder="(41) 99999-9999" required maxlength="24"></label>
             <label class="full-row">Data do envio <input name="delivery_on" type="date" required></label>
-            <p class="field-help full-row">O presente será enviado no seu nome, pelo WhatsApp, a partir das 9h da data escolhida (horário de Brasília). Se o cartão ainda estiver em preparação, o envio será feito após a liberação.</p>
+            <p class="field-help full-row">O presente será enviado no seu nome, pelo WhatsApp, a partir das 9h da data escolhida (horário de Brasília).</p>
           </fieldset>
           <fieldset class="purchase-contact">
             <legend>Seus dados</legend>
@@ -62,7 +62,7 @@ export function purchase(product, preview) {
             '<p class="field-help">Você paga com Pix ou cartão pelo Mercado Pago.</p>'}
         </section>
         ${preview ? `<section class="purchase-fields" data-purchase-panel aria-label="Simulação concluída" hidden>
-          <p data-preview-result></p><p class="field-help">Em uma compra real, o envio respeita a data escolhida e depende da liberação do cartão.</p>
+          <p data-preview-result></p><p class="field-help">Em uma compra real, o presenteado receberá o cartão pelo WhatsApp na data escolhida.</p>
         </section>` : ""}
       </div>
       <aside class="purchase-summary" aria-label="Prévia do cartão">

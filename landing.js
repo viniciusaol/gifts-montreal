@@ -106,7 +106,7 @@ export function landing({ campaign, catalog, preview, review = false }) {
           <ol class="steps">
             <li><span>${icon("ball")}</span><h3>Escolha a experiência</h3><p>Escolha a duração da locação ou da aula particular.</p></li>
             <li><span>${icon("pen")}</span><h3>Personalize o cartão</h3><p>Escreva uma mensagem e indique para qual WhatsApp vai o presente.</p></li>
-            <li><span>${icon("gift")}</span><h3>Pague e presenteie</h3><p>Após a confirmação e a liberação, o presenteado recebe o cartão e as instruções pelo WhatsApp na data escolhida.</p></li>
+            <li><span>${icon("gift")}</span><h3>Pague e presenteie</h3><p>Após a confirmação do pagamento, o presenteado recebe o cartão e as instruções pelo WhatsApp na data escolhida.</p></li>
           </ol>
         </div>
       </section>

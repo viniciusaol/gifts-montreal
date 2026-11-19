@@ -194,7 +194,7 @@ async function orderPage() {
   const status = document.querySelector("#status-text");
   const messages = {
     pending:"Aguardando confirmação do Mercado Pago. Você pode fechar esta página.",
-    approved:"Pagamento aprovado. Você receberá o cartão no seu WhatsApp após a emissão.",
+    approved:"Pagamento aprovado. Seu Montreal Gift será enviado para o seu WhatsApp.",
     rejected:"O Mercado Pago informou que o pagamento não foi concluído.",
     refunded:"O pagamento foi estornado.",
     disputed:"O pagamento está em análise.",
@@ -205,8 +205,8 @@ async function orderPage() {
     try {
       const order = await api("/status/" + token);
       const approvedDirect = order.status==="approved" && order.delivery_mode==="recipient";
-      const message = approvedDirect && order.delivery_on ? "Pagamento aprovado. Envio ao presenteado em " + date(order.delivery_on) + ", após a liberação do cartão." :
-        approvedDirect ? "Pagamento aprovado. Após a emissão, o cartão será enviado ao WhatsApp do presenteado." : messages[order.status];
+      const message = approvedDirect && order.delivery_on ? "Pagamento aprovado. Seu presente será enviado ao WhatsApp do presenteado em " + date(order.delivery_on) + "." :
+        approvedDirect ? "Pagamento aprovado. Seu presente será enviado ao WhatsApp do presenteado." : messages[order.status];
       status.textContent = "Pedido " + order.number + ". " + (message || "Consulte novamente em instantes.");
     } catch (error) { status.textContent = error.message; }
     finally { refresh.disabled = false; }
